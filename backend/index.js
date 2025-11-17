@@ -9,7 +9,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 const corsOptions = {
-    origin: process.env.Frontend_URL || 'http://localhost:5173'
+    origin: process.env.Frontend_URL
 };
 
 app.use(cors(corsOptions));
@@ -22,31 +22,6 @@ const upload = multer({
         // Basic mimetype check first
         if (file.mimetype === 'application/pdf') cb(null, true);
         else cb(null, false);
-    }
-});
-
-app.post('/pdfs', upload.single('pdf'), (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).json({ error: 'No file uploaded or unsupported file type' });
-        }
-
-        const buffer = req.file.buffer;
-        if (!buffer || buffer.length < 4) {
-            return res.status(400).json({ error: 'Uploaded file is too small to be a valid PDF' });
-        }
-
-        // Check PDF magic bytes: files start with "%PDF"
-        const header = buffer.subarray(0, 4).toString('utf8');
-        if (!header.startsWith('%PDF')) {
-            return res.status(400).json({ error: 'File is not a valid PDF (magic bytes mismatch)' });
-        }
-
-        console.log('Upload successful:', req.file.originalname);
-        return res.json({ message: 'PDF received and validated', filename: req.file.originalname, size: req.file.size });
-    } catch (err) {
-        console.error('Upload error:', err);
-        return res.status(500).json({ error: 'Internal server error during file validation' });
     }
 });
 
@@ -64,8 +39,11 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
-
-// Summarize uploaded PDF using Gemini/GenAI
+/**
+ * @route POST /summarize
+ * @description Accepts a PDF file upload, validates it, and returns a summary using Gemini API.
+ * @access Public
+ */
 app.post('/summarize', upload.single('pdf'), async (req, res) => {
     try {
         if (!req.file) {
@@ -84,10 +62,8 @@ app.post('/summarize', upload.single('pdf'), async (req, res) => {
 
         const base64 = buffer.toString('base64');
         const result = await summarizePdfBase64(base64);
-        console.log('\n\nSummarization result:\n\n', result);
-        return res.status(200).json({ filename: req.file.originalname, size: req.file.size, summary: result });
+        return res.status(200).json({ filename: req.file.originalname, size: req.file.size, data: result });
     } catch (err) {
-        console.error('Summarize error:', err);
-        return res.status(500).json({ error: 'Internal server error during summarization', detail: err.message });
+        return res.status(500).json({ error: err });
     }
 });

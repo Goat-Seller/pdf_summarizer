@@ -1,29 +1,20 @@
 import axios from 'axios';
 import {useState} from 'react';
 
-export default function Form({ onSubmit }) {
+export default function Form() {
   const [file, setFile] = useState(null);
   const [error, setError] = useState('');
   const [status, setStatus] = useState('idle');
   const [progress, setProgress] = useState(0);
   const [summary, setSummary] = useState('');
 
+  //const backendUrl = 'http://localhost:3000';
   const backendUrl = import.meta.env.VITE_API_URL;
-  const validatePdf = (f) => {
-    if (!f) return 'No file selected';
-    const isPdfByType = f.type === 'application/pdf';
-    return isPdfByType ? '' : 'Only PDF files are allowed';
-  };
-
+ 
   const handleChange = (e) => {
-    setError(''); 
+    setStatus('idle');
+    setProgress(0);
     const f = e.target.files && e.target.files[0];
-    const err = validatePdf(f);
-    if (err) {
-      setFile(null);
-      setError(err);
-      return;
-    }
     setFile(f);
   };
 
@@ -33,9 +24,7 @@ export default function Form({ onSubmit }) {
       setError('Please select a PDF file before submitting.');
       return;
     }
-    
     setStatus('uploading');
-    setError('');
     setProgress(0);
     setSummary('');
 
@@ -53,10 +42,8 @@ export default function Form({ onSubmit }) {
           setProgress(percentCompleted);
         }
         }).then((response) => {
-          setSummary(response.data.summary);
-        }).catch(function (error) {
-          setError(error.message);
-        });
+          setSummary(response.data.data);
+        })
       setStatus('success');
     } catch (error) {
       setStatus('error');
@@ -65,7 +52,6 @@ export default function Form({ onSubmit }) {
       setSummary('');
       return;
     }
-    
   };
 
   return (
@@ -77,9 +63,8 @@ export default function Form({ onSubmit }) {
         accept="application/pdf"
         onChange={handleChange}
       />
-
       {file && <div>Selected: {file.name}</div>}
-      {error && <div style={{ color: 'red' }}>{error}</div>}
+      {status === 'error' && <div style={{ color: 'red' }}>{error}</div>}
       {file && status != 'uploading' && <button type="submit">Submit</button>}
       {status === 'success' && <div style={{ color: 'green' }}>File uploaded successfully!</div>}
       {status === 'uploading' && <div>Uploading: {progress}%</div>}
