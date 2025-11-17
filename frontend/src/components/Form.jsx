@@ -1,6 +1,5 @@
 import axios from 'axios';
-import {useState, useEffect} from 'react';
-
+import {useState} from 'react';
 
 export default function Form({ onSubmit }) {
   const [file, setFile] = useState(null);
@@ -9,7 +8,7 @@ export default function Form({ onSubmit }) {
   const [progress, setProgress] = useState(0);
   const [summary, setSummary] = useState('');
 
-
+  const backendUrl = import.meta.env.VITE_API_URL;
   const validatePdf = (f) => {
     if (!f) return 'No file selected';
     const isPdfByType = f.type === 'application/pdf';
@@ -43,7 +42,7 @@ export default function Form({ onSubmit }) {
     const formData = new FormData();
     formData.append('pdf', file);
     try {
-      await axios.post(process.env.BACKEND_URL + '/summarize', formData ,{
+      await axios.post(`${backendUrl}/summarize`, formData ,{
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -53,15 +52,15 @@ export default function Form({ onSubmit }) {
            : 0;
           setProgress(percentCompleted);
         }
-      }).then((response) => {
-        setSummary(response.data.summary);
-      }).catch(function (error) {
-      setError(error.message);
-      });
+        }).then((response) => {
+          setSummary(response.data.summary);
+        }).catch(function (error) {
+          setError(error.message);
+        });
       setStatus('success');
     } catch (error) {
       setStatus('error');
-      setError('Failed to upload PDF. Please try again.');
+      setError(error.message);
       setProgress(0);
       setSummary('');
       return;

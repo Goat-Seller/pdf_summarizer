@@ -2,12 +2,14 @@ import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
 import { summarizePdfBase64 } from './gemini-pdf.js';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 const corsOptions = {
-    origin: Frontend_URL || 'http://localhost:5173'
+    origin: process.env.Frontend_URL || 'http://localhost:5173'
 };
 
 app.use(cors(corsOptions));

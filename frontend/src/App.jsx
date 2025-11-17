@@ -5,9 +5,7 @@ import './App.css'
 function App() {
   return (
     <>
-    <ErrorBoundary FallbackComponent={<div>Something went wrong.</div>}>
        <Form/>
-    </ErrorBoundary>  
     </>
   )
 }
