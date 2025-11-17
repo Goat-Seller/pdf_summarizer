@@ -43,7 +43,7 @@ export default function Form({ onSubmit }) {
     const formData = new FormData();
     formData.append('pdf', file);
     try {
-      await axios.post('http://localhost:3000/summarize', formData ,{
+      await axios.post(process.env.BACKEND_URL + '/summarize', formData ,{
         headers: {
           'Content-Type': 'multipart/form-data',
         },
