@@ -25,7 +25,7 @@ const upload = multer({
     }
 });
 
-// Multer-specific error handler
+//  Multer-specific error handler
 app.use((err, req, res, next) => {
     if (err && err.code && err.code === 'LIMIT_FILE_SIZE') {
         return res.status(400).json({ error: 'File too large. Max size is 10MB.' });
@@ -36,9 +36,11 @@ app.use((err, req, res, next) => {
     next(err);
 });
 
+// Start server
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+
 /**
  * @route POST /summarize
  * @description Accepts a PDF file upload, validates it, and returns a summary using Gemini API.
